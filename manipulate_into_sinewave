@@ -1,0 +1,55 @@
+########################
+#  Manipulate sounds into sine waves
+#  Chuyu HUANG 2022.03.14
+#
+#  This script turns sounds into sine wave in a selected directory 
+#  The final file is saved as a sound file.
+#  File needed: sound files
+########################
+
+# remove any objects open in object window
+select all
+numberOfSelectedObjects = numberOfSelected ()
+if numberOfSelectedObjects > 0
+     Remove
+endif
+
+# define folders
+	# the folder where sound files and textgrid are located
+	dir$ = "C:\Users\batt7\Desktop\praat_sinewave_test\"
+
+	# assign a folder to save the output files
+	output$ = "C:\Users\batt7\Desktop\praat_sinewave_test\output\"
+
+# read sound files
+Create Strings as file list: "files", dir$ + "*.wav"
+nFiles = Get number of strings
+
+
+for i from 1 to nFiles
+	selectObject: "Strings files"
+	filename$ = Get string: i
+	basename$ = filename$ - ".wav"
+	Read from file: dir$ + basename$ + ".wav"
+
+# change manipulation details here
+To Manipulation: 0.01, 75, 600
+Extract pitch tier
+
+To Sound (sine): 44100
+
+  # variations (substitute the line above with any of the following)
+  # to pulse train
+    # To Sound (pulse train): 44100, 1, 0.05, 2000, "no"
+  # to phonation
+    # To Sound (phonation): 44100, 1, 0.05, 0.7, 0.03, 3, 4, "no"
+  # to hum
+    # To Sound (phonation): 44100, 1, 0.05, 0.7, 0.03, 3, 4, "yes"
+
+Write to WAV file... 'output$''basename$'.wav
+
+endfor
+
+select all
+Remove
+writeInfoLine: "Successfully created!"
