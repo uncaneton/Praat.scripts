@@ -14,12 +14,12 @@ if numberOfSelectedObjects > 0
      Remove
 endif
 
-# define folders
+# define directories
 	# the folder where sound files and textgrid are located
-	dir$ = "C:\Users\batt7\Desktop\praat_sinewave_test\"
+	dir$ = "C:\yourfolder"
 
 	# assign a folder to save the output files
-	output$ = "C:\Users\batt7\Desktop\praat_sinewave_test\output\"
+	output$ = "C:\yourfolder\output\"
 
 # read sound files
 Create Strings as file list: "files", dir$ + "*.wav"
