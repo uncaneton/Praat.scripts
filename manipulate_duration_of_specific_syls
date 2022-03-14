@@ -15,7 +15,7 @@ if numberOfSelectedObjects > 0
      Remove
 endif
 
-# define folders
+# define directories
 	# the folder where sound files and textgrid are located
 	dir$ = "C:\yourfolder\"
 
