@@ -17,10 +17,10 @@ endif
 
 # define folders
 	# the folder where sound files and textgrid are located
-	dir$ = "C:\Users\batt7\Desktop\praat_duration_test\"
+	dir$ = "C:\yourfolder\"
 
 	# assign a folder to save the output files
-	output$ = "C:\Users\batt7\Desktop\praat_duration_test\output\"
+	output$ = "C:\yourfolder\outputfolder"
 
 # read sound files
 Create Strings as file list: "files", dir$ + "*.wav"
