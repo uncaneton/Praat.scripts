@@ -1,0 +1,118 @@
+#############################
+# Basic acousitc analysis
+#
+# This Praat script is intended to help acoustic analyses of a voicing contrast.
+# Specifically, it will get F0 and F1 at the boundaries of all intervals and duration of all intervals. 
+# Version: 4 Feb 2010
+# Author: Shigeto Kawahara
+# Input: TextGrid and wav in the same directly. They must have the same name.
+#
+# Modifier: Chuyu Huang (2022.03.15)
+# Modified points: reference error correction, output refinement (each segment into one line), F2-F4 extraction added
+#############################
+
+form Get F0, F1 and duration
+	sentence Directory  ./
+	comment If you want to analyze all the files, leave this blank
+	word Base_file_name 
+	comment The name of result file 
+	text textfile Demo.txt
+endform
+
+# Write-out the header (copy if necessary)
+
+fileappend "'textfile$'" soundname'tab$'intervalname'tab$'F0_Onset'tab$'F0_Offset'tab$'F1_Onset'tab$'F1_Offset'tab$'F2_Onset'tab$'F2_Offset'tab$'F3_Onset'tab$'F3_Offset'tab$'F4_Onset'tab$'F4_Offset'tab$'Duration'tab$'Closure voicing (percent)
+fileappend "'textfile$'" 'newline$'
+
+#Read all files in a folder
+Create Strings as file list... wavlist 'directory$'/'base_file_name$'*.wav
+Create Strings as file list... gridlist 'directory$'/'base_file_name$'*.TextGrid
+n = Get number of strings
+
+for i to n
+clearinfo
+
+#We first extract a pitch tier and a formant tier, and a PointProcess for the pulses
+	select Strings wavlist
+	filename$ = Get string... i
+	Read from file... 'directory$'/'filename$'
+	soundname$ = selected$ ("Sound")
+	To Formant (burg)... 0 5 5500 0.025 50
+	select Sound 'soundname$'
+	To Pitch... 0 75 600
+	select Sound 'soundname$'
+	plus Pitch 'soundname$'
+	To PointProcess (cc)
+	# added rename to fix the error of pointprocess
+	Rename: soundname$
+
+# We now read grid files and extract all intervals in them
+	select Strings gridlist
+	gridname$ = Get string... i
+	Read from file... 'directory$'/'gridname$'
+	int=Get number of intervals... 1
+
+# We then calculate the acoustic properties
+
+for k from 1 to 'int'
+	select TextGrid 'soundname$'
+	label$ = Get label of interval... 1 'k'
+	if label$ <> ""
+
+		# calculates the onset and offset
+ 		onset = Get starting point... 1 'k'
+  		offset = Get end point... 1 'k'
+        
+		# calculates F0      
+		select Pitch 'soundname$'
+		fzero_onset = Get value at time... 'onset' Hertz Linear
+		fzero_offset = Get value at time... 'offset' Hertz Linear
+
+		# calculates F1
+		select Formant 'soundname$'
+		fone_onset = Get value at time... 1 'onset' Hertz Linear
+		fone_offset = Get value at time... 1 'offset' Hertz Linear
+
+		# calculates F2
+		select Formant 'soundname$'
+		ftwo_onset = Get value at time... 2 'onset' Hertz Linear
+		ftwo_offset = Get value at time... 2 'offset' Hertz Linear
+
+		# calculates F3
+		select Formant 'soundname$'
+		fthree_onset = Get value at time... 3 'onset' Hertz Linear
+		fthree_offset = Get value at time... 3 'offset' Hertz Linear
+
+		# calculates F4
+		select Formant 'soundname$'
+		ffour_onset = Get value at time... 4 'onset' Hertz Linear
+		ffour_offset = Get value at time... 4 'offset' Hertz Linear
+
+		# calculates duration		
+		dur = offset-onset
+	
+		# calculate percent voicing during closure
+		select Sound 'soundname$'
+		plus Pitch 'soundname$'
+		plus PointProcess 'soundname$'
+		voiceReport$ = Voice report... onset offset 75 500 1.3 1.6 0.03 0.45
+		percentvoiceless = extractNumber (voiceReport$, " Fraction of locally unvoiced frames: ")
+		percentvoiceless = 100*percentvoiceless
+		percentvoiced = 100-percentvoiceless
+
+		resultline$ = "'soundname$''tab$''label$''tab$''fzero_onset''tab$''fzero_offset''tab$''fone_onset''tab$''fone_offset''tab$''ftwo_onset''tab$''ftwo_offset''tab$''fthree_onset''tab$''fthree_offset''tab$''ffour_onset''tab$''ffour_offset''tab$''dur''tab$''percentvoiced''newline$'"
+		fileappend "'textfile$'" 'resultline$'
+	endif
+endfor
+
+fileappend "'textfile$'" 'newline$'
+
+	
+endfor
+
+# clean up
+
+select all
+Remove
+writeInfoLine: "Successfully created!"
+
