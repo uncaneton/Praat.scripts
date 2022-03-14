@@ -1,0 +1,63 @@
+########################
+#  Manipulate the duration of a specific syllable
+#  Chuyu HUANG 2022.03.14
+#
+#  This script changes the duration of the target on a TextGrid 
+#  in a selected directory. The final file is saved as a sound file.
+#  File needed: sound files, annotated .TextGrid files with the same 
+#  file name.
+########################
+
+# remove any objects open in object window
+select all
+numberOfSelectedObjects = numberOfSelected ()
+if numberOfSelectedObjects > 0
+     Remove
+endif
+
+# define folders
+	# the folder where sound files and textgrid are located
+	dir$ = "C:\Users\batt7\Desktop\praat_duration_test\"
+
+	# assign a folder to save the output files
+	output$ = "C:\Users\batt7\Desktop\praat_duration_test\output\"
+
+# read sound files
+Create Strings as file list: "files", dir$ + "*.wav"
+nFiles = Get number of strings
+
+
+for i from 1 to nFiles
+	selectObject: "Strings files"
+	filename$ = Get string: i
+	basename$ = filename$ - ".wav"
+	Read from file: dir$ + basename$ + ".wav"
+
+# change manipulation details here
+To Manipulation: 0.01, 75, 600
+
+# read textgrid files and create a duration tier by textgrid
+Read from file: dir$ + basename$ + ".TextGrid"
+
+# change duration tier details here
+	# the second number is the multiple number of the target syllable
+	# e.g. 0.5 = to make the target syllable the half length
+	# the final string is the target syllable annotated in TextGrid files
+To DurationTier: 1, 0.5, 1e-10, 1e-10, "is equal to", "xx"
+
+selectObject: "Manipulation 'basename$'"
+plusObject: "DurationTier 'basename$'"
+Replace duration tier
+
+selectObject: "Manipulation 'basename$'"
+
+Get resynthesis (overlap-add)
+
+
+Write to WAV file... 'output$''basename$'.wav
+
+endfor
+
+select all
+Remove
+writeInfoLine: "Successfully created!"
